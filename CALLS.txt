@@ -1,0 +1,5 @@
+If you want to use call feature, you must have the permission to that.
+
+* First you need to add your jid in jids database table.
+* After you must add the destiny phone number in phones database table (you must inform at least number and channel used to call to number, ex: DGV/g0).
+* You have to vinculate your jid record with phone number record in jids_phones database table.

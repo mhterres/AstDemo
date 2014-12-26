@@ -11,6 +11,7 @@ PostgreSQL running
 ServerInfo Plugin Support (http://www.mundoopensource.com.br/serverinfo-plugin-openfire/)
 python-pyst (http://sourceforge.net/projects/pyst/)
 python psycopg2 (http://initd.org/psycopg/)
+python xmppppy (http://xmpppy.sourceforge.net/)
 
 Installation
 ************
