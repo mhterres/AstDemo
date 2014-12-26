@@ -1,0 +1,228 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# AstDemo
+# Processa mensagens XMPP - DEMO para site e conexões externas MOS
+#
+# Marcelo H. Terres <mhterres@gmail.com>
+# 2014-08-04
+#
+# Versao 0.1.3
+# Updated 2014-12-26
+#
+
+import sys
+import os
+import socket
+import subprocess
+import time
+import re
+import psycopg2
+import psycopg2.extras
+
+from asterisk import agi
+from xmpp_defs import infoVoIP
+from xmpp_defs import ManagerDict
+from xmpp_defs import sipPeer
+from xmpp_defs import sipPeers
+from xmpp_defs import iaxPeers
+from xmpp_classes import XMPPp
+from xmpp_classes import Config
+from xmpp_classes import connectAMI
+from xmpp_classes import activeLogs
+
+def getdata(sck,cmd):
+
+	sck.send(cmd + "\n")
+	time.sleep (0.2)
+	data = s.recv(65536)
+
+	return data
+
+def showHelp():
+
+		returnmsg = "\r";
+		returnmsg += "HELP\r";
+		returnmsg += "Valid commands:\r";
+		returnmsg += "\r";
+		returnmsg += "\tcall <number> - Make a call to <number> and play tt-monkeys.\r";
+		returnmsg += "\tinfo <voip|xmpp> - show VoIP or XMPP server informations.\r";
+		returnmsg += "\thelp - show this help.\r";
+		returnmsg += "\tiaxpeers - show IAX peers.\r";
+		returnmsg += "\tsippeer <extension> - show SIP informations of <extension>.\r";
+		returnmsg += "\tsippeers - show SIP peers.\r";
+		returnmsg += "\tversion - show astdemo version.\r";
+
+		return returnmsg
+
+def validNumber(jid,number):
+
+	cfg = Config()
+
+	dsn = 'dbname=%s host=%s user=%s password=%s' % (cfg.db_dbname, cfg.db_host, cfg.db_user, cfg.db_pwd)
+
+	conn = psycopg2.connect(dsn)
+	curs = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+	sql = 'SELECT r.id FROM jids_phones as r,jids as j,phones as p where r.jid_id = j.id and r.phone_id=p.id and j.jid = %s and p.phone = %s'
+	curs.execute(sql, (jid,number))
+
+	if not curs.rowcount:
+		return False
+
+	return True
+
+def getChannel(jid,number):
+
+	cfg = Config()
+
+	dsn = 'dbname=%s host=%s user=%s password=%s' % (cfg.db_dbname, cfg.db_host, cfg.db_user, cfg.db_pwd)
+
+	conn = psycopg2.connect(dsn)
+	curs = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+	sql = 'SELECT p.channel FROM jids_phones as r,jids as j,phones as p where r.jid_id = j.id and r.phone_id=p.id and j.jid = %s and p.phone = %s'
+	curs.execute(sql, (jid,number))
+
+	if not curs.rowcount:
+		return ""
+
+	value = curs.fetchone()['channel']
+	return value
+
+activeLogs('/tmp','astdemo','all')
+print "Starting AstDemo.agi..."
+
+print "Loading config..."
+cfg=Config()
+
+print "Starting AGI connection..."
+agi = agi.AGI()
+
+xmppdomain = agi.get_variable('XMPPDOMAIN')
+xmppresource = agi.get_variable('XMPPRESOURCE_DEMO')
+
+jid = ((((agi.get_variable('MESSAGE(from)')).split(":"))[1]).split("/"))[0]
+
+print "Getting message..."
+
+message = agi.get_variable('MESSAGE(body)')
+
+cmds = message.split()
+
+cmdini = cmds[0]
+
+print "Message: %s" % message
+print "Command: %s" % cmdini
+
+returnmsg=""
+
+if cmdini == 'help':
+
+	print "Running help option"
+	returnmsg=showHelp()
+
+elif cmdini == "info":
+
+	#Pega parâmetro
+	try:
+			param = cmds[1];
+	except:
+
+		# Parâmetro nao indicado
+		returnmsg = "You need to inform parameter.\r";
+		returnmsg += "Syntax: info <voip|xmpp>";
+	else:
+
+		if param == "xmpp":
+
+			myXMPP=XMPPp()
+
+			if not myXMPP.connected:
+
+				returnmsg = "Can't connect %s XMPP server." % myXMPP.domain
+
+			else:
+
+				if not myXMPP.authenticated:
+
+
+					returnmsg = "Can't auth on %s XMPP server." % myXMPP.domain
+				else:
+
+					returnmsg = "XMPP Informations\r"
+
+					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					s.connect((cfg.serverinfo_host,int(cfg.serverinfo_port)))
+
+					returnmsg += "Server " + myXMPP.domain + " available.\r"
+					returnmsg += getdata(s,'openfire version').replace("\n","") + "\r" 
+					returnmsg += getdata(s,'openfire uptime').replace("\n","").replace("Openfire ","") + "\r"
+
+					s.close()
+
+		elif param == "voip":
+
+			returnmsg=infoVoIP()
+
+		else:
+			returnmsg = "Invalid parameter.\r";
+			returnmsg += "Syntaxe: info <voip|xmpp>";
+
+elif cmdini == "iaxpeers":
+
+	returnmsg = iaxPeers()
+
+elif cmdini == "sippeers":
+
+	returnmsg = sipPeers()
+
+elif cmdini == "sippeer":
+
+	if len(cmds)==1:
+
+		returnmsg = "You need to inform extension."
+	else:
+
+		exten=cmds[1]
+		returnmsg=sipPeer(exten)
+
+elif cmdini == "call":
+
+	#Pega parâmetro
+	try:
+		param = cmds[1];
+	except:
+
+		# Parâmetro nao indicado
+		returnmsg = "You need to inform number.\r";
+		returnmsg += "Syntax: call <number>";
+	else:
+
+		if validNumber(jid,param):
+
+			channel=getChannel(jid,param)
+
+			myConnect = connectAMI()
+			s = myConnect.socket
+
+			action='ACTION: Originate\nChannel: ' + channel + '/' + param + '\nExten: testcall\nPriority: 1\nTimeout: 60000\nContext: testcall\n\n'
+			agi.verbose('Sending ' + action)
+
+			s.send(action)
+			returnmsg = "Call to number %s realized." % param
+
+			s.close()
+		else:
+
+			returnmsg = "JID %s is not authorized to call %s " % (jid,param)
+
+elif cmdini == "version":
+
+	returnmsg = "You are running AstDemo version %s " % cfg.version
+
+else:
+	returnmsg = "Command %s not found." % cmdini 
+	
+agi.set_variable("RETURN_MSG", returnmsg)
+

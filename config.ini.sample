@@ -1,0 +1,23 @@
+# Arquivo de config
+
+[general]
+
+version='0.1.3'
+
+# xmpp
+jid_auth=astdemo@jabber.yourdomain.com.br
+jid_pwd=YourPassword
+
+# voip
+voip_manager_srv=voip.yourdomain.com.br
+voip_manager_usr=astdemo
+voip_manager_pwd=YourManagerPassword
+
+# db
+db_host = localhost
+db_dbname = astdemo
+db_user = astdemo
+db_pwd = YourDatabasePassword
+# serverinfo
+serverinfo_host = 127.0.0.1
+serverinfo_port = 4455
