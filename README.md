@@ -11,7 +11,6 @@ PostgreSQL running
 ServerInfo Plugin Support (http://www.mundoopensource.com.br/serverinfo-plugin-openfire/)
 python-pyst (http://sourceforge.net/projects/pyst/)
 python psycopg2 (http://initd.org/psycopg/)
-python xmppppy (http://xmpppy.sourceforge.net/)
 
 Installation
 ************
@@ -25,6 +24,7 @@ Installation
 Available Commands
 ******************
 * call <number> - Make a call to <number> and play tt-monkeys.
+* callerid <extension> [jid] - enable or disable the callerid xmpp message on received calls to extension.
 * info <voip|xmpp> - show VoIP or XMPP server informations.
 * help - show this help.
 * iaxpeers - show IAX peers.

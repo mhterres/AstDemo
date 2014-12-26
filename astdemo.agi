@@ -46,6 +46,7 @@ def showHelp():
 		returnmsg += "Valid commands:\r";
 		returnmsg += "\r";
 		returnmsg += "\tcall <number> - Make a call to <number> and play tt-monkeys.\r";
+		returnmsg += "\tcallerid <extension> <jid> - Enable/Disable the callerid xmpp message on received calls.\r";
 		returnmsg += "\tinfo <voip|xmpp> - show VoIP or XMPP server informations.\r";
 		returnmsg += "\thelp - show this help.\r";
 		returnmsg += "\tiaxpeers - show IAX peers.\r";
@@ -187,14 +188,42 @@ elif cmdini == "sippeer":
 		exten=cmds[1]
 		returnmsg=sipPeer(exten)
 
-elif cmdini == "call":
+elif cmdini == "callerid":
 
-	#Pega parâmetro
 	try:
 		param = cmds[1];
 	except:
 
-		# Parâmetro nao indicado
+		returnmsg = "You need to inform at least your extension.\r";
+		returnmsg += "Syntax: callerid <extension> [jid]";
+	else:
+
+		extension_number = cmds[1]
+
+		try:
+			callerid_enabled = agi.database_get("exten_%s" % extension_number,"jid");
+		except:
+
+			try:
+				extension_jid = cmds[2]
+			except:
+
+				returnmsg = "To enable this resource you need to inform your extension and your jid.\r"
+				returnmsg += "Syntax: callerid <extension> <jid>";
+			else:
+				agi.database_put("exten_%s" % extension_number,"jid",extension_jid);
+				returnmsg = "CallerID XMPP Message enabled.";
+		else:
+
+			agi.database_del("exten_%s" % extension_number,"jid");
+			returnmsg = "CallerID XMPP Message disabled.";
+
+elif cmdini == "call":
+
+	try:
+		param = cmds[1];
+	except:
+
 		returnmsg = "You need to inform number.\r";
 		returnmsg += "Syntax: call <number>";
 	else:
