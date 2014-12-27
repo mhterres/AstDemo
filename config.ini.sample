@@ -2,7 +2,7 @@
 
 [general]
 
-version='0.1.4'
+version='0.1.4.1'
 
 # xmpp
 jid_auth=astdemo@jabber.yourdomain.com.br
