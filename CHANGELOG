@@ -1,3 +1,17 @@
+* Version 0.1.5 (2014-12-27) Marcelo H. Terres <mhterres@mundoopensource.com.br>
+** PostgresSQL schema added
+** Added support for Asterisk Realtime
+** Improved documentation
+** Improved source and directory organization
+** Command whoami added (asterisk realtime required)
+** Command dnd added (asterisk realtime required)
+** Command queuemsg added (asterisk realtime required)
+** Command queue added (asterisk realtime required)
+** Command queueon added (asterisk realtime required)
+** Command queueoff added (asterisk realtime required)
+---------------------------------
+
+
 * Version 0.1.4.1 (2014-12-27) Marcelo H. Terres <mhterres@mundoopensource.com.br>
 ** TODO added
 ---------------------------------

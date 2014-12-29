@@ -2,7 +2,7 @@
 
 [general]
 
-version='0.1.4.1'
+version='0.1.5'
 
 # xmpp
 jid_auth=astdemo@jabber.yourdomain.com.br
@@ -22,3 +22,14 @@ db_pwd = YourDatabasePassword
 # serverinfo
 serverinfo_host = 127.0.0.1
 serverinfo_port = 4455
+
+# Asterisk
+# asterisk_realtime
+# 0 - disable, 1 - enable
+asterisk_realtime=1 
+asterisk_db_host=127.0.0.1
+asterisk_db_name=asterisk
+asterisk_db_user=asterisk
+asterisk_db_pwd=YourAsteriskDatabasePassword
+asterisk_sip_table=sip
+asterisk_jid_field=jid

@@ -4,8 +4,8 @@ import re
 import psycopg2
 import psycopg2.extras
 import sys
-from xmpp_classes import Config
-from xmpp_classes import activeLogs
+from astdemo_classes import Config
+from astdemo_classes import activeLogs
 
 activeLogs('/tmp','update_logs_astdemo','err')
 

@@ -21,75 +21,24 @@ import psycopg2
 import psycopg2.extras
 
 from asterisk import agi
-from xmpp_defs import infoVoIP
-from xmpp_defs import ManagerDict
-from xmpp_defs import sipPeer
-from xmpp_defs import sipPeers
-from xmpp_defs import iaxPeers
-from xmpp_classes import XMPPp
-from xmpp_classes import Config
-from xmpp_classes import connectAMI
-from xmpp_classes import activeLogs
+from astdemo_defs import infoVoIP
+from astdemo_defs import sipPeer
+from astdemo_defs import sipPeers
+from astdemo_defs import iaxPeers
+from astdemo_defs import showHelp
+from astdemo_defs import getChannel
+from astdemo_defs import ManagerDict
+from astdemo_defs import validNumber
+from astdemo_defs import getSocketData
+from astdemo_defs import getJidExtension
+from astdemo_defs import getAsteriskRealtimeInformation
 
-def getdata(sck,cmd):
-
-	sck.send(cmd + "\n")
-	time.sleep (0.2)
-	data = s.recv(65536)
-
-	return data
-
-def showHelp():
-
-		returnmsg = "\r";
-		returnmsg += "HELP\r";
-		returnmsg += "Valid commands:\r";
-		returnmsg += "\r";
-		returnmsg += "\tcall <number> - Make a call to <number> and play tt-monkeys.\r";
-		returnmsg += "\tcallerid <extension> <jid> - Enable/Disable the callerid xmpp message on received calls.\r";
-		returnmsg += "\tinfo <voip|xmpp> - show VoIP or XMPP server informations.\r";
-		returnmsg += "\thelp - show this help.\r";
-		returnmsg += "\tiaxpeers - show IAX peers.\r";
-		returnmsg += "\tsippeer <extension> - show SIP informations of <extension>.\r";
-		returnmsg += "\tsippeers - show SIP peers.\r";
-		returnmsg += "\tversion - show astdemo version.\r";
-
-		return returnmsg
-
-def validNumber(jid,number):
-
-	cfg = Config()
-
-	dsn = 'dbname=%s host=%s user=%s password=%s' % (cfg.db_dbname, cfg.db_host, cfg.db_user, cfg.db_pwd)
-
-	conn = psycopg2.connect(dsn)
-	curs = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-	sql = 'SELECT r.id FROM jids_phones as r,jids as j,phones as p where r.jid_id = j.id and r.phone_id=p.id and j.jid = %s and p.phone = %s'
-	curs.execute(sql, (jid,number))
-
-	if not curs.rowcount:
-		return False
-
-	return True
-
-def getChannel(jid,number):
-
-	cfg = Config()
-
-	dsn = 'dbname=%s host=%s user=%s password=%s' % (cfg.db_dbname, cfg.db_host, cfg.db_user, cfg.db_pwd)
-
-	conn = psycopg2.connect(dsn)
-	curs = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-	sql = 'SELECT p.channel FROM jids_phones as r,jids as j,phones as p where r.jid_id = j.id and r.phone_id=p.id and j.jid = %s and p.phone = %s'
-	curs.execute(sql, (jid,number))
-
-	if not curs.rowcount:
-		return ""
-
-	value = curs.fetchone()['channel']
-	return value
+from astdemo_classes import XMPPp
+from astdemo_classes import astDB
+from astdemo_classes import Queue
+from astdemo_classes import Config
+from astdemo_classes import connectAMI
+from astdemo_classes import activeLogs
 
 activeLogs('/tmp','astdemo','all')
 print "Starting AstDemo.agi..."
@@ -99,6 +48,8 @@ cfg=Config()
 
 print "Starting AGI connection..."
 agi = agi.AGI()
+
+astdb = astDB(agi)
 
 xmppdomain = agi.get_variable('XMPPDOMAIN')
 xmppresource = agi.get_variable('XMPPRESOURCE_DEMO')
@@ -118,6 +69,13 @@ print "Command: %s" % cmdini
 
 returnmsg=""
 
+if cfg.asterisk_realtime=="1":
+
+	params=getAsteriskRealtimeInformation(jid)
+	extension_number=params[0]
+	extension_jid=params[1]
+	extension_callerid=params[2]
+
 if cmdini == 'help':
 
 	print "Running help option"
@@ -125,12 +83,11 @@ if cmdini == 'help':
 
 elif cmdini == "info":
 
-	#Pega parâmetro
 	try:
-			param = cmds[1];
+
+		param = cmds[1];
 	except:
 
-		# Parâmetro nao indicado
 		returnmsg = "You need to inform parameter.\r";
 		returnmsg += "Syntax: info <voip|xmpp>";
 	else:
@@ -157,8 +114,8 @@ elif cmdini == "info":
 					s.connect((cfg.serverinfo_host,int(cfg.serverinfo_port)))
 
 					returnmsg += "Server " + myXMPP.domain + " available.\r"
-					returnmsg += getdata(s,'openfire version').replace("\n","") + "\r" 
-					returnmsg += getdata(s,'openfire uptime').replace("\n","").replace("Openfire ","") + "\r"
+					returnmsg += getSocketData(s,'openfire version').replace("\n","") + "\r" 
+					returnmsg += getSocketData(s,'openfire uptime').replace("\n","").replace("Openfire ","") + "\r"
 
 					s.close()
 
@@ -188,35 +145,126 @@ elif cmdini == "sippeer":
 		exten=cmds[1]
 		returnmsg=sipPeer(exten)
 
-elif cmdini == "callerid":
+elif cmdini == "queuemsg":
 
-	try:
-		param = cmds[1];
-	except:
+	if cfg.asterisk_realtime=="1":
 
-		returnmsg = "You need to inform at least your extension.\r";
-		returnmsg += "Syntax: callerid <extension> [jid]";
-	else:
+		if extension_number=="" or extension_jid=="":
 
-		extension_number = cmds[1]
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
 
-		try:
-			callerid_enabled = agi.database_get("exten_%s" % extension_number,"jid");
-		except:
+		else: 
 
 			try:
-				extension_jid = cmds[2]
+
+				queue = cmds[1];
+
 			except:
 
-				returnmsg = "To enable this resource you need to inform your extension and your jid.\r"
-				returnmsg += "Syntax: callerid <extension> <jid>";
+				returnmsg = "You need to inform queue.\r";
+				returnmsg += "Syntax: queuemsg <queue> <message>";
 			else:
-				agi.database_put("exten_%s" % extension_number,"jid",extension_jid);
-				returnmsg = "CallerID XMPP Message enabled.";
+
+				try:
+
+					message = cmds[2];
+
+				except:
+
+					returnmsg = "You need to inform your message.\r";
+					returnmsg += "Syntax: queuemsg <queue> <message>";
+				else:
+
+					myqueue = Queue(queue,agi)
+
+					if myqueue.isavailable:
+
+						mymembers = myqueue.getmembers()
+			
+						i=0;
+			
+						for item in cmds:
+
+							if (i > 2):
+
+								message += " " + item;
+
+							i+=1;
+
+						myConnect = connectAMI()
+						s = myConnect.socket
+
+						for member in mymembers:
+
+							membersplited=member.split("/")
+							myexten = (membersplited[1].replace('\n','')).replace('\r','')
+
+							xmppresource = agi.get_variable('XMPPRESOURCE')
+							jid=getJidExtension(myexten)
+
+							if len(jid.strip()) > 0:
+
+								s.send('Action: JabberSend\nJabber:	' + xmppresource + '\nScreenName: ' + jid + '\nMessage: ' + message + '\n\n')
+
+						s.close()
+
+						returnmsg = "Message	sent."
+	
+					else:
+
+						returnmsg = "Queue %s unavailable." % queue
+
+elif cmdini == "callerid":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+
 		else:
 
-			agi.database_del("exten_%s" % extension_number,"jid");
-			returnmsg = "CallerID XMPP Message disabled.";
+			try:
+
+				callerid_enabled = astdb.get('jid',extension_number)
+			except:
+
+				astdb.put('jid',extension_number,extension_jid)
+				returnmsg = "CallerID XMPP Message enabled.";
+			else:
+
+				astdb.rem('jid',extension_number)
+				returnmsg = "CallerID XMPP Message disabled.";
+	else:
+
+		try:
+			param = cmds[1];
+		except:
+
+			returnmsg = "You need to inform at least your extension.\r";
+			returnmsg += "Syntax: callerid <extension> [jid]";
+		else:
+
+			extension_number = cmds[1]
+
+			try:
+				callerid_enabled = astDB(agi,'jid','get',extension_number)
+			except:
+
+				try:
+					extension_jid = cmds[2]
+				except:
+
+					returnmsg = "To enable this resource you need to inform your extension and your jid.\r"
+					returnmsg += "Syntax: callerid <extension> <jid>";
+				else:
+
+					astDB(agi,'jid','put',extension_number,extension_jid)
+					returnmsg = "CallerID XMPP Message enabled.";
+			else:
+
+				astDB(agi,'jid','del',extension_number,)
+				returnmsg = "CallerID XMPP Message disabled.";
 
 elif cmdini == "call":
 
@@ -246,11 +294,192 @@ elif cmdini == "call":
 
 			returnmsg = "JID %s is not authorized to call %s " % (jid,param)
 
+elif cmdini == "dnd":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+
+		else:
+			try:
+
+				param = cmds[1];
+			except:
+
+				returnmsg = "You need to inform operation.\r";
+				returnmsg += "Syntaxe: dnd <on|off|status>";
+			else:
+
+				try:
+
+					dnd = astdb.get('dnd',extension_number)
+				except:
+
+					dnd=0
+				else:
+
+					dnd=1
+
+				if param == "on":	
+
+					if dnd == 1:
+
+						returnmsg = "DND is already enabled to extension %s." % extension_number
+					else:
+
+						astdb.put('dnd',extension_number,1);
+						returnmsg = "DND is enabled to extension %s." % extension_number
+				elif param == "off":
+
+					if dnd == 0:
+
+						returnmsg = "DND is already disabled to extension %s." % extension_number
+					else:
+
+						astdb.rem('dnd',extension_number);
+						returnmsg = "DND is disabled to extension %s." % extension_number;
+
+				elif param == "status":
+
+					if dnd == 1:
+
+						returnmsg = "DND is enabled."
+					else:
+
+						returnmsg = "DND is disabled."
+				else:
+
+					returnmsg = "Operation " + param + " is invalid."
+																		
 elif cmdini == "version":
 
 	returnmsg = "You are running AstDemo version %s " % cfg.version
 
+elif cmdini == "whoami":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+		else:
+
+			returnmsg = "I'm %s.\r" % extension_callerid
+			returnmsg+= "My extension is %s.\r" % extension_number
+			returnmsg+= "My Jabber ID is %s." % extension_jid
+
+elif cmdini == "queueoff":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+
+		else:
+
+			try:
+
+				param = cmds[1];
+
+			except:
+
+				returnmsg = "Queue not informed.\r";
+				returnmsg += "Syntax: queueoff <queue>";
+			else:
+
+				myqueue=Queue(param,agi)
+
+				if myqueue.isavailable:
+
+					myqueue.getmembers()
+					returnmsg=myqueue.removemember(extension_number,agi)
+				else:
+
+					returnmsg = "Queue %s doesn't exist." % param
+
+elif cmdini == "queueon":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+
+		else:
+
+
+			try:
+
+				param = cmds[1];
+
+			except:
+
+				returnmsg = "Queue not informed.\r";
+				returnmsg += "Syntax: queueon <queue>";
+			else:
+
+				myqueue=Queue(param,agi)
+
+				if myqueue.isavailable:
+
+					myqueue.getmembers()
+					returnmsg=myqueue.addmember(extension_number,agi)
+
+				else:
+
+					returnmsg = "Queue %s doesn't exist." % param
+
+elif cmdini == "queue":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+
+		else:
+
+			try:
+
+				param = cmds[1];
+
+			except:
+			
+				returnmsg = "Queue not informed.\r";
+				returnmsg += "Syntax: queue <queue>";
+			else:
+
+				myqueue = Queue(param,agi)
+
+				if myqueue.isavailable:
+
+					mymembers = myqueue.getmembers()
+
+					returnmsg = "Queue %s informations:\r" % myqueue.name
+					returnmsg += "Logged members: %s" % myqueue.loggedmembers
+					returnmsg += "Members available: %s" % myqueue.availablemembers
+
+					returnmsg+="Strategy: %s" % myqueue.strategy
+					returnmsg+="Calls: %s" % myqueue.calls
+					returnmsg+="Completed: %s" % myqueue.completed
+					returnmsg+="Abandoned: %s" % myqueue.abandoned
+					returnmsg+="Hold time: %s" % myqueue.holdtime
+					returnmsg+="Talk time: %s" % myqueue.talktime
+
+					returnmsg +="Queue members\r"
+
+					for member in mymembers:
+
+						returnmsg += member
+	
+				else:
+
+					returnmsg = "Queue %s doesn't exist." % param
 else:
+
 	returnmsg = "Command %s not found." % cmdini 
 	
 agi.set_variable("RETURN_MSG", returnmsg)
