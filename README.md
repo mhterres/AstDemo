@@ -38,8 +38,8 @@ If you have Asterisk Realtime enabled you'll have access to more commands:
 * dnd <on|off|status> - enable/Disable or show Do Not Disturb status.
 * queue <queue> - show <queue> members and statistics.
 * queuemsg <queue> <message> - send <message> to all members of <queue>.
-* queueon <queue> - join <queue>.
-* queueoff <queue> - leave <queue>.
+* enter <queue> - join <queue>.
+* leave <queue> - leave <queue>.
 * whoami - show informations about myself.
 
 Asterisk Realtime Support

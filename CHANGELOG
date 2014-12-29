@@ -1,3 +1,9 @@
+* Version 0.1.5.2 (2014-12-29) Marcelo H. Terres <mhterres@mundoopensource.com.br>
+** Change command queueon to enter
+** Change command queueoff to leave
+-----------------------------------
+
+
 * Version 0.1.5.1 (2014-12-28) Marcelo H. Terres <mhterres@mundoopensource.com.br>
 ** README.md improvement
 ---------------------------------

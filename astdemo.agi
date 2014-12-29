@@ -370,7 +370,7 @@ elif cmdini == "whoami":
 			returnmsg+= "My extension is %s.\r" % extension_number
 			returnmsg+= "My Jabber ID is %s." % extension_jid
 
-elif cmdini == "queueoff":
+elif cmdini == "leave":
 
 	if cfg.asterisk_realtime=="1":
 
@@ -387,7 +387,7 @@ elif cmdini == "queueoff":
 			except:
 
 				returnmsg = "Queue not informed.\r";
-				returnmsg += "Syntax: queueoff <queue>";
+				returnmsg += "Syntax: leave <queue>";
 			else:
 
 				myqueue=Queue(param,agi)
@@ -400,7 +400,7 @@ elif cmdini == "queueoff":
 
 					returnmsg = "Queue %s doesn't exist." % param
 
-elif cmdini == "queueon":
+elif cmdini == "enter":
 
 	if cfg.asterisk_realtime=="1":
 
@@ -418,7 +418,7 @@ elif cmdini == "queueon":
 			except:
 
 				returnmsg = "Queue not informed.\r";
-				returnmsg += "Syntax: queueon <queue>";
+				returnmsg += "Syntax: enter <queue>";
 			else:
 
 				myqueue=Queue(param,agi)

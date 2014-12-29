@@ -216,6 +216,7 @@ def showHelp():
   if cfg.asterisk_realtime=="1":
 
     returnmsg += "\tdnd <on|off|status> - enable/Disable or show Do Not Disturb status.\r";
+    returnmsg += "\tenter <queue> - join <queue>.\r"
 
   returnmsg += "\tinfo <voip|xmpp> - show VoIP or XMPP server informations.\r";
   returnmsg += "\thelp - show this help.\r";
@@ -223,10 +224,9 @@ def showHelp():
 
   if cfg.asterisk_realtime=="1":
 
+    returnmsg += "\tleave <queue> - leave <queue>.\r";
     returnmsg += "\tqueue <queue> - show <queue> members and statistics.\r";
     returnmsg += "\tqueuemsg <queue> <message> - send <message> to all members of queue <queue>.\r"
-    returnmsg += "\tqueueon <queue> - join <queue>.\r"
-    returnmsg += "\tqueueoff <queue> - leave <queue>.\r";
 
   returnmsg += "\tsippeer <extension> - show SIP informations of <extension>.\r";
   returnmsg += "\tsippeers - show SIP peers.\r";
