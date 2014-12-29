@@ -1,4 +1,9 @@
-* Version 0.1.5 (2014-12-27) Marcelo H. Terres <mhterres@mundoopensource.com.br>
+* Version 0.1.5.1 (2014-12-28) Marcelo H. Terres <mhterres@mundoopensource.com.br>
+** README.md improvement
+---------------------------------
+
+
+* Version 0.1.5 (2014-12-28) Marcelo H. Terres <mhterres@mundoopensource.com.br>
 ** PostgresSQL schema added
 ** Added support for Asterisk Realtime
 ** Improved documentation
