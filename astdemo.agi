@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 # AstDemo
-# Processa mensagens XMPP - DEMO para site e conexões externas MOS
+# XMPP Messages Process Script
 #
 # Marcelo H. Terres <mhterres@gmail.com>
 # 2014-08-04
 #
-# Versao 0.1.3
-# Updated 2014-12-26
+# Versao 0.1.6
+# Updated 2014-12-30
 #
 
 import sys
@@ -21,6 +21,9 @@ import psycopg2
 import psycopg2.extras
 
 from asterisk import agi
+
+from astdemo_db import DB
+
 from astdemo_defs import infoVoIP
 from astdemo_defs import sipPeer
 from astdemo_defs import sipPeers
@@ -41,22 +44,18 @@ from astdemo_classes import connectAMI
 from astdemo_classes import activeLogs
 
 activeLogs('/tmp','astdemo','all')
-print "Starting AstDemo.agi..."
 
-print "Loading config..."
 cfg=Config()
 
-print "Starting AGI connection..."
+db = DB()
 agi = agi.AGI()
-
 astdb = astDB(agi)
 
 xmppdomain = agi.get_variable('XMPPDOMAIN')
 xmppresource = agi.get_variable('XMPPRESOURCE_DEMO')
 
 jid = ((((agi.get_variable('MESSAGE(from)')).split(":"))[1]).split("/"))[0]
-
-print "Getting message..."
+msg_to = ((((agi.get_variable('MESSAGE(to)')).split(":"))[1]).split("/"))[0]
 
 message = agi.get_variable('MESSAGE(body)')
 
@@ -64,8 +63,7 @@ cmds = message.split()
 
 cmdini = cmds[0]
 
-print "Message: %s" % message
-print "Command: %s" % cmdini
+db.logMessage(jid,msg_to,message)
 
 returnmsg=""
 
@@ -78,7 +76,6 @@ if cfg.asterisk_realtime=="1":
 
 if cmdini == 'help':
 
-	print "Running help option"
 	returnmsg=showHelp()
 
 elif cmdini == "info":
@@ -221,7 +218,6 @@ elif cmdini == "callerid":
 		if extension_number=="" or extension_jid=="":
 
 			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
-
 		else:
 
 			try:
@@ -478,9 +474,71 @@ elif cmdini == "queue":
 				else:
 
 					returnmsg = "Queue %s doesn't exist." % param
+
+elif cmdini=="monitor":
+
+	if len(cmds) < 3:
+
+		returnmsg ="You need to inform type and target to monitor.\r"
+		returnmsg+="Example: monitor sip 9999 or monitor queue support."
+	else:
+
+		operation_type=cmds[1]
+		operation_target=cmds[2]
+
+		if operation_type != "sip" and operation_type != "queue" and operation_type != "iax":
+
+			returnmsg ="Valid types are iax, sip or queue.\r"
+			returnmsg+="Syntax: monitor <iax|sip|queue> <target>."
+
+		else:
+
+			if db.monitorOperation(jid,cmdini,operation_type,operation_target):
+
+				returnmsg = "Start monitoring %s %s" % (operation_type,operation_target)
+			else:
+
+				returnmsg = " %s %s is already monitored" % (operation_type,operation_target)
+
+elif cmdini=="unmonitor":
+
+	if len(cmds) < 3:
+
+		returnmsg ="You need to inform type and target to unmonitor.\r"
+		returnmsg+="Example: unmonitor sip 9999 or unmonitor queue support."
+	else:
+
+		operation_type=cmds[1]
+		operation_target=cmds[2]
+
+		if operation_type != "sip" and operation_type != "queue" and operation_type != "iax":
+
+			returnmsg ="Valid types are iax, sip or queue.\r"
+			returnmsg+="Syntax: unmonitor <iax|sip|queue> <target>."
+
+		else:
+
+			if db.monitorOperation(jid,cmdini,operation_type,operation_target):
+
+				returnmsg = "Stop monitoring %s %s" % (operation_type,operation_target)
+			else:
+
+				returnmsg = " %s %s is not monitored" % (operation_type,operation_target)
+
+elif cmdini=="monitoring":
+
+	data=db.monitoringItems(jid)
+
+	if data=="":
+
+		returnmsg = "There are no monitoring itens for %s." % jid
+	else:
+
+		returnmsg = "%s monitoring items:\r%s" % (jid,data)
+
 else:
 
 	returnmsg = "Command %s not found." % cmdini 
-	
+
 agi.set_variable("RETURN_MSG", returnmsg)
 

@@ -1,3 +1,16 @@
+* Version 0.1.6 (2014-12-30) Marcelo H. Terres <mhterres@mundoopensource.com.br>
+** README.md changed
+** Code sanitization
+** Command monitor sip added
+** Command monitor queue added
+** Command unmonitor sip added
+** Command unmonitor queue added
+** Command monitoring added
+** Database updated to support monitor features
+** Added monitor cronjob
+** Added monitor script
+-----------------------------------
+
 * Version 0.1.5.2 (2014-12-29) Marcelo H. Terres <mhterres@mundoopensource.com.br>
 ** Change command queueon to enter
 ** Change command queueoff to leave

@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Classes
+# AstDemo_classes
 #
 # Marcelo H. Terres <mhterres@gmail.com>
 # 2014-06-02
 #
-# Versao 0.2.1.1
+# Updated 2014/12/30
 
 import os
 import sys
@@ -56,24 +56,24 @@ class ManagerDict:
 		activeLogs('/tmp','astdemo_classes','err')
 
 		# split the text
-		linhas = text.split('\n')
+		lines = text.split('\n')
 
 		d={}
 
-		for item in linhas:
+		for item in lines:
 
-			dado=item.split(":",1)
+			data=item.split(":",1)
 
 			try:
 
-				title=dado[0]
+				title=data[0]
 			except:
 
 				title=""
 
 			try:
 
-				value=dado[1]
+				value=data[1]
 			except:
 
 				value=""
@@ -106,6 +106,8 @@ class Config:
 		# xmpp
 		self.jid_auth=configuration.get('general','jid_auth')
 		self.jid_pwd=configuration.get('general','jid_pwd')
+		self.xmppdomain=configuration.get('general','xmppdomain')
+		self.xmppresource=configuration.get('general','xmppresource')
 
 		# voip
 		self.voip_manager_srv=configuration.get('general','voip_manager_srv')
@@ -131,6 +133,9 @@ class Config:
 		self.asterisk_sip_table=configuration.get('general','asterisk_sip_table')
 		self.asterisk_jid_field=configuration.get('general','asterisk_jid_field')
 
+		# monitoring
+		self.monitoring_log_operation=configuration.get('general','monitoring_log_operation')
+		self.monitoring_log_state=configuration.get('general','monitoring_log_state')
 
 class XMPPp:
 
@@ -166,6 +171,8 @@ class XMPPp:
 
 				self.authenticated=True
 
+		self.client = cl
+
 
 class ManagerDictEvents:
 
@@ -176,7 +183,7 @@ class ManagerDictEvents:
 		activeLogs('/tmp','astdemo_classes','err')
 
 		# split the text
-		linhas = text.split('\n')
+		lines = text.split('\n')
 
 		i=0
 
@@ -198,20 +205,20 @@ class ManagerDictEvents:
 			self.fulldicti={}
 			self.dictiitems=0
 
-			for myitem in linhas:
+			for myitem in lines:
 
-				dado=myitem.split(":",1)
+				data=myitem.split(":",1)
 
 				try:
 
-					title=dado[0]
+					title=data[0]
 				except:
 
 					title=""
 
 				try:
 
-					value=dado[1]
+					value=data[1]
 				except:
 
 					value=""
@@ -297,6 +304,41 @@ class Queue:
 
 				s.close
 
+		def membersNumber(self):
+
+				members=0
+
+				myConnect=connectAMI()
+				s = myConnect.socket
+
+				s.send('Action: QueueStatus\nQueue: ' + self.name + '\n\n')
+				time.sleep (0.1)
+
+				data = s.recv(65536)
+				mgrdict=ManagerDict(data)
+
+				lines = data.split('\n')
+
+				for item in lines:
+
+						data=item.split(":",1)
+
+						try:
+
+								title=data[0]
+						except:
+
+								title=""
+
+						if title == "Name":
+
+								members = members + 1
+
+				s.close
+
+				return (members)
+
+
 		def getmembers(self):
 
 				myConnect=connectAMI()
@@ -324,11 +366,11 @@ class Queue:
 				self.holdtime = mgrdict.getitem('Holdtime')
 				self.talktime = mgrdict.getitem('TalkTime')
 
-				linhas = data2.split('\n')
+				lines = data2.split('\n')
 
 				aMembers=[]
 
-				for item in linhas:
+				for item in lines:
 
 						data=item.split(":",1)
 
@@ -441,7 +483,7 @@ class astDB():
 
 	def get(self,key,extension):
 
-			return self.agi.database_get("exten_%s" % extension, key)
+		return self.agi.database_get("exten_%s" % extension, key)
 
 	def put(self,key,extension,value):
 

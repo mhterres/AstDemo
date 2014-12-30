@@ -1,0 +1,2 @@
+MAILTO=''
+*/5 * * * * root /var/lib/asterisk/agi-bin/astdemo/astdemo_monitor.py
