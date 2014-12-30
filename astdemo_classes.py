@@ -101,6 +101,7 @@ class Config:
 		configuration.read('%s/config.ini' % os.path.dirname(sys.argv[0]))
 
 		# script
+		self.path = os.path.dirname(sys.argv[0])
 		self.version=configuration.get('general','version')
 
 		# xmpp
@@ -136,6 +137,10 @@ class Config:
 		# monitoring
 		self.monitoring_log_operation=configuration.get('general','monitoring_log_operation')
 		self.monitoring_log_state=configuration.get('general','monitoring_log_state')
+
+		# call cmd
+		self.call_callerid = configuration.get('general','call_callerid')
+		self.call_context = configuration.get('general','call_context')
 
 class XMPPp:
 

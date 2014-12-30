@@ -268,7 +268,12 @@ def showHelp():
 	returnmsg = "\r";
 	returnmsg += "HELP\r";
 	returnmsg += "Valid commands:\r";
-	returnmsg += "\tcall <number> - make a call to <number> and play tt-monkeys.\r";
+
+	if cfg.asterisk_realtime=="1":
+
+		returnmsg += "\tcall <sip extension> - call to <sip extension> and transfer to your extension when answered.\r";
+
+	returnmsg += "\tcallmsg <number> - make a call to <number> and play tt-monkeyswhen answered.\r";
 
 	if cfg.asterisk_realtime=="1":
 
@@ -342,6 +347,8 @@ def validNumber(jid,number):
 
 def getChannel(jid,number):
 
+	activeLogs('/tmp','astdemo_classes','err')
+
 	cfg = Config()
 
 	dsn = 'dbname=%s host=%s user=%s password=%s' % (cfg.db_dbname, cfg.db_host, cfg.db_user, cfg.db_pwd)
@@ -367,7 +374,7 @@ def getQueueMembersNumber(queue):
 	myConnect=connectAMI()
 	s = myConnect.socket
 
-	s.send('Action: QueueStatus\nQueue: ' + queue + '\n\n')
+	s.send('Action: QueueStatus\nQueue: %s\n\n' % queue)
 	time.sleep (0.1)
 
 	data = s.recv(65536)
@@ -393,4 +400,16 @@ def getQueueMembersNumber(queue):
 	s.close
 
 	return (members)
+
+def call(number,extension,callerid,context,priority):
+
+	myConnect=connectAMI()
+	s = myConnect.socket
+
+	#s.send('Action: Originate\nChannel: SIP/%s\nExten: %s\nCallerID: %s\nContext: %s\nPriority: %s\n\n') % (number,extension,callerid,context,priority)
+	s.send('Action: Originate\nChannel: SIP/' + number + '\nExten: ' + extension + '\nCallerID: ' + callerid + '\nContext: ' + context + '\nPriority: ' + priority + '\nAsync: true\n\n') % (number,extension,callerid,context,priority)
+	time.sleep (0.1)
+
+	s.close()
+
 

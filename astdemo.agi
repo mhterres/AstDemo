@@ -24,6 +24,7 @@ from asterisk import agi
 
 from astdemo_db import DB
 
+from astdemo_defs import call
 from astdemo_defs import infoVoIP
 from astdemo_defs import sipPeer
 from astdemo_defs import sipPeers
@@ -123,6 +124,29 @@ elif cmdini == "info":
 		else:
 			returnmsg = "Invalid parameter.\r";
 			returnmsg += "Syntaxe: info <voip|xmpp>";
+
+elif cmdini == "call":
+
+	if cfg.asterisk_realtime=="1":
+
+		if extension_number=="" or extension_jid=="":
+
+			returnmsg = "You need to associate your jid with an extension in sip asterisk table."
+
+		else: 
+
+			try:
+
+				number = cmds[1];
+
+			except:
+
+				returnmsg = "You need to inform sip extension to dial.\r";
+				returnmsg += "Syntax: call <sip extension>";
+			else:
+
+				call(number,extension_number,cfg.call_callerid,cfg.call_context,'1')
+				returnmsg = "Dialing SIP/%s." % number
 
 elif cmdini == "iaxpeers":
 
@@ -262,7 +286,7 @@ elif cmdini == "callerid":
 				astDB(agi,'jid','del',extension_number,)
 				returnmsg = "CallerID XMPP Message disabled.";
 
-elif cmdini == "call":
+elif cmdini == "callmsg":
 
 	try:
 		param = cmds[1];

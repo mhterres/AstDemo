@@ -19,11 +19,11 @@ Installation
 * Create you astdemo database (you can use db/pgsql/astdemo.sql)
 * Copy config.ini.sample to config.ini and update inifile with your data
 * Configure your xmpp Asterisk resource (asterisk_config/xmpp.conf has a sample of configuration)
-* Edit your extensions.conf file, adding [from_xmpp_demo] context and adding variables in [globals] context. If you want support to features like callerid and dnd, adapt your extensions context too. See extensions.conf file in asterisk_config directory.
+* Edit your extensions.conf file, adding [from_xmpp_demo] context, [call] context and adding variables in [globals] context. If you want support to features like callerid and dnd, adapt your extensions context too. See extensions.conf file in asterisk_config directory.
 
 Available Commands
 ******************
-* call <number> - make a call to <number> and play tt-monkeys when answered.
+* callmsg <number> - make a call to <number> and play tt-monkeys when answered.
 * callerid <extension> [jid] - enable or disable the callerid xmpp message on received calls to extension.
 * info <voip|xmpp> - show VoIP or XMPP server informations.
 * help - show this help.
@@ -40,6 +40,7 @@ Available Commands
 * version - show astdemo version.
 
 If you have Asterisk Realtime enabled you'll have access to more commands:
+* call <sip extension> - call to <sip extension> and transfer to your extension when answered.
 * dnd <on|off|status> - enable/disable or show Do Not Disturb status.
 * queue <queue> - show <queue> members and statistics.
 * queuemsg <queue> <message> - send <message> to all members of <queue>.

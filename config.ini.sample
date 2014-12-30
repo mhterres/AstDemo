@@ -39,3 +39,6 @@ asterisk_jid_field=jid
 monitoring_log_state=1
 monitoring_log_operation=1
 
+# call cmd
+call_callerid = Asterisk Auto Call
+call_context = call
