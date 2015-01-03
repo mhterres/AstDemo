@@ -1,3 +1,9 @@
+* Version 0.1.6.2 (2014-01-03) Marcelo H. Terres <mhterres@mundoopensource.com.br>
+** astdemo.sql file changed (owner correction)
+** README file changed (xmpppy requirement added)
+-----------------------------------
+
+*
 * Version 0.1.6.1 (2014-12-30) Marcelo H. Terres <mhterres@mundoopensource.com.br>
 ** Command call changed to callmsg
 ** New command call (call SIP extension and transfer to your extension after answered)

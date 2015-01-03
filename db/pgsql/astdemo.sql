@@ -75,7 +75,7 @@ CREATE SEQUENCE jids_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.jids_id_seq OWNER TO asterisk;
+ALTER TABLE public.jids_id_seq OWNER TO astdemo;
 
 SET default_tablespace = '';
 
@@ -92,7 +92,7 @@ CREATE TABLE jids (
 );
 
 
-ALTER TABLE public.jids OWNER TO asterisk;
+ALTER TABLE public.jids OWNER TO astdemo;
 
 --
 -- Name: TABLE jids; Type: COMMENT; Schema: public; Owner: asterisk
@@ -113,7 +113,7 @@ CREATE SEQUENCE jids_phones_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.jids_phones_id_seq OWNER TO asterisk;
+ALTER TABLE public.jids_phones_id_seq OWNER TO astdemo;
 
 --
 -- Name: jids_phones; Type: TABLE; Schema: public; Owner: asterisk; Tablespace: 
@@ -126,7 +126,7 @@ CREATE TABLE jids_phones (
 );
 
 
-ALTER TABLE public.jids_phones OWNER TO asterisk;
+ALTER TABLE public.jids_phones OWNER TO astdemo;
 
 --
 -- Name: TABLE jids_phones; Type: COMMENT; Schema: public; Owner: asterisk
@@ -148,7 +148,7 @@ CREATE SEQUENCE logs_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.logs_id_seq OWNER TO asterisk;
+ALTER TABLE public.logs_id_seq OWNER TO astdemo;
 
 --
 -- Name: logs; Type: TABLE; Schema: public; Owner: asterisk; Tablespace: 
@@ -163,7 +163,7 @@ CREATE TABLE logs (
 );
 
 
-ALTER TABLE public.logs OWNER TO asterisk;
+ALTER TABLE public.logs OWNER TO astdemo;
 
 --
 -- Name: TABLE logs; Type: COMMENT; Schema: public; Owner: asterisk
@@ -184,7 +184,7 @@ CREATE SEQUENCE monitors_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.monitors_id_seq OWNER TO asterisk;
+ALTER TABLE public.monitors_id_seq OWNER TO astdemo;
 
 --
 -- Name: monitors; Type: TABLE; Schema: public; Owner: asterisk; Tablespace: 
@@ -201,7 +201,7 @@ CREATE TABLE monitors (
 );
 
 
-ALTER TABLE public.monitors OWNER TO asterisk;
+ALTER TABLE public.monitors OWNER TO astdemo;
 
 --
 -- Name: monitors_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: asterisk
@@ -215,7 +215,7 @@ CREATE SEQUENCE monitors_logs_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.monitors_logs_id_seq OWNER TO asterisk;
+ALTER TABLE public.monitors_logs_id_seq OWNER TO astdemo;
 
 --
 -- Name: monitors_logs; Type: TABLE; Schema: public; Owner: asterisk; Tablespace: 
@@ -232,7 +232,7 @@ CREATE TABLE monitors_logs (
 );
 
 
-ALTER TABLE public.monitors_logs OWNER TO asterisk;
+ALTER TABLE public.monitors_logs OWNER TO astdemo;
 
 --
 -- Name: phones_id_seq; Type: SEQUENCE; Schema: public; Owner: asterisk
@@ -246,7 +246,7 @@ CREATE SEQUENCE phones_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.phones_id_seq OWNER TO asterisk;
+ALTER TABLE public.phones_id_seq OWNER TO astdemo;
 
 --
 -- Name: phones; Type: TABLE; Schema: public; Owner: asterisk; Tablespace: 
@@ -260,7 +260,7 @@ CREATE TABLE phones (
 );
 
 
-ALTER TABLE public.phones OWNER TO asterisk;
+ALTER TABLE public.phones OWNER TO astdemo;
 
 --
 -- Name: TABLE phones; Type: COMMENT; Schema: public; Owner: asterisk

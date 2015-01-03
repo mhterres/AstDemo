@@ -9,8 +9,9 @@ Requisites
 * Asterisk 11 or later running with XMPP support
 * PostgreSQL running
 * ServerInfo Plugin Support (http://www.mundoopensource.com.br/serverinfo-plugin-openfire/)
-* python-pyst (http://sourceforge.net/projects/pyst/)
+* python pyst (http://sourceforge.net/projects/pyst/)
 * python psycopg2 (http://initd.org/psycopg/)
+* python xmpppy (http://xmpppy.sourceforge.net/)
 
 Installation
 ************
