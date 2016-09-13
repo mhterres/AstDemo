@@ -312,7 +312,7 @@ elif cmdini == "callmsg":
 			s.close()
 		else:
 
-			returnmsg = "JID %s is not authorized to call %s " % (jid,param)
+			returnmsg = "JID %s is not authorized to call to %s " % (jid,param)
 
 elif cmdini == "dnd":
 

@@ -320,11 +320,48 @@ def showHelp():
 
 	return returnmsg
 
+def recv_timeout(s,timeout=.5):
+    #make socket non blocking
+    s.setblocking(0)
+
+    #total data partwise in an array
+    total_data=[];
+    data='';
+
+    #beginning time
+    begin=time.time()
+    while 1:
+        #if you got some data, then break after timeout
+        if total_data and time.time()-begin > timeout:
+            break
+
+        #if you got no data at all, wait a little longer, twice the timeout
+        elif time.time()-begin > timeout*2:
+            break
+
+        #recv something
+        try:
+            data = s.recv(8192)
+            if data:
+                total_data.append(data)
+                #change the beginning time for measurement
+                begin=time.time()
+            else:
+                #sleep for sometime to indicate a gap
+                time.sleep(0.1)
+        except:
+            pass
+
+    #join all parts to make final string
+    return ''.join(total_data)
+
 def getSocketData(sck,cmd):
 
 	sck.send(cmd + "\n")
-	time.sleep (0.1)
-	data = s.recv(65536)
+	#time.sleep (0.1)
+	#data = s.recv(65536)
+	data = recv_timeout(sck)
+
 
 	return data
 
@@ -406,8 +443,7 @@ def call(number,extension,callerid,context,priority):
 	myConnect=connectAMI()
 	s = myConnect.socket
 
-	#s.send('Action: Originate\nChannel: SIP/%s\nExten: %s\nCallerID: %s\nContext: %s\nPriority: %s\n\n') % (number,extension,callerid,context,priority)
-	s.send('Action: Originate\nChannel: SIP/' + number + '\nExten: ' + extension + '\nCallerID: ' + callerid + '\nContext: ' + context + '\nPriority: ' + priority + '\nAsync: true\n\n') % (number,extension,callerid,context,priority)
+	s.send('Action: Originate\nChannel: SIP/' + number + '\nExten: ' + extension + '\nCallerID: ' + callerid + '\nContext: ' + context + '\nPriority: ' + priority + '\nAsync: true\n\n')
 	time.sleep (0.1)
 
 	s.close()
